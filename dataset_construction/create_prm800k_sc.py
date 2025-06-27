@@ -1,3 +1,4 @@
+import os
 import json
 import random
 from collections import Counter, defaultdict
@@ -23,9 +24,9 @@ print('Excluding bad problem and give up', len([d for d in data if d['label']['f
 print(Counter([d['generation'] for d in data]))
 
 
-client = genai.Client(api_key="AIzaSyA2mccCJJ4u7fQBg7dAFJdJLGxwSQEuZBg",
+client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"),
                       http_options=types.HttpOptions(api_version='v1alpha')
-                    )
+                      )
 
 
 class CheckAnswer(BaseModel):
