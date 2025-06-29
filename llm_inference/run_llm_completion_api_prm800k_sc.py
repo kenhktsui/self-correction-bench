@@ -1,5 +1,6 @@
 import os
 import json
+import random
 from copy import deepcopy
 import concurrent.futures
 import threading
@@ -8,6 +9,16 @@ from tqdm import tqdm
 from datasets import load_dataset
 from openai import OpenAI
 from llm_inference.prompt import get_prompt_eos_token
+
+
+TEMPERATURE = 0.6
+FILE_NAME = "prm800k_sc_completion_results_api.jsonl" if TEMPERATURE == 0.0 else f"prm800k_sc_completion_results_api_{str(TEMPERATURE).replace('.', '_')}.jsonl"
+
+if os.path.exists(FILE_NAME):
+    print(f"File {FILE_NAME} already exists.")
+else:
+    with open(FILE_NAME, "w") as f:
+        pass
 
 
 MODEL_LIST = {
@@ -42,11 +53,11 @@ dataset = load_dataset("kenhktsui/prm800k_sc", split="test")
 
 
 # Create an OpenAI client with your deepinfra token and endpoint
-deepinfra_client = OpenAI(api_key=os.environ.get("DEEPINFRA_API_KEY"), base_url="https://api.deepinfra.com/v1/openai")
+deepinfra_client = OpenAI(api_key=os.environ.get("DEEPINFRA_API_KEY"), base_url="https://api.deepinfra.com/v1/openai", timeout=180)
 
 
 id_set = set()
-with open("prm800k_sc_completion_results_api.jsonl", "r") as f:
+with open(FILE_NAME, "r") as f:
     for line in f:
         d = json.loads(line)
         id_set.add(str(d['question']) + "_" + d['model'] + "_" + str(d.get('enable_thinking', False)))
@@ -78,7 +89,7 @@ def openai_client_process_item(client, item_tuple):
             model=model,
             prompt=prompt,
             max_tokens=1024,
-            temperature=0.0,
+            temperature=TEMPERATURE,
             stop=[eos_token]
         )
         return prompt, response
@@ -140,7 +151,8 @@ def openai_client_process_item(client, item_tuple):
         "response_error_injection_in_model_aca_wait": response_error_injection_in_model_aca_wait.choices[0].text,
         "response_error_injection_in_model_bca_cot": response_error_injection_in_model_bca_cot.choices[0].text,
         "response_error_injection_in_model_aca_cot": response_error_injection_in_model_aca_cot.choices[0].text,
-        "enable_thinking": enable_thinking
+        "enable_thinking": enable_thinking,
+        "temperature": TEMPERATURE
     }
 
 
@@ -148,11 +160,14 @@ deepinfra_client_process_item = partial(openai_client_process_item, deepinfra_cl
 
 file_lock = threading.Lock()
 
-with open("prm800k_sc_completion_results_api.jsonl", "a") as f:
+with open(FILE_NAME, "a") as f:
     items_to_process = []
     for model, hf_tokenizer_name in MODEL_LIST.items():
         for d in dataset:
             items_to_process.append((model, hf_tokenizer_name, d))
+
+    # shuffle the model to reduce the chance of concurrent requests to the same model
+    random.shuffle(items_to_process)
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=16) as executor:
         futures = [executor.submit(deepinfra_client_process_item, item) for item in items_to_process]
