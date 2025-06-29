@@ -18,6 +18,17 @@ from evaluation_with_llm.eval_prompt import (
 )
 
 
+TEMPERATURE = 0.6
+FILE_NAME_IN = "gsm8k_sc_completion_results_api.jsonl" if TEMPERATURE == 0.0 else f"gsm8k_sc_completion_results_api_{str(TEMPERATURE).replace('.', '_')}.jsonl"
+FILE_NAME_OUT = "gsm8k_sc_completion_results_llm_eval_gemini2_5_flash.jsonl" if TEMPERATURE == 0.0 else f"gsm8k_sc_completion_results_llm_eval_gemini2_5_flash_{str(TEMPERATURE).replace('.', '_')}.jsonl"
+
+if os.path.exists(FILE_NAME_OUT):
+    print(f"File {FILE_NAME_OUT} already exists.")
+else:
+    with open(FILE_NAME_OUT, "w") as f:
+        pass
+
+
 dataset = load_dataset("kenhktsui/gsm8k_sc", split="test")
 correct_answer = {}
 for d in dataset:
@@ -49,7 +60,7 @@ def evaluate_with_llm(eval_system_prompt, prompt, response_schema):
 
 data = []
 result_id_set = set()
-with open("gsm8k_sc_completion_results_api.jsonl", "r") as f:
+with open(FILE_NAME_IN, "r") as f:
     for line in f:
         d = json.loads(line)
         data.append(d)
@@ -57,7 +68,7 @@ with open("gsm8k_sc_completion_results_api.jsonl", "r") as f:
 
 
 result_id_llm_eval_set = set()
-with open("gsm8k_sc_completion_results_llm_eval_gemini2_5_flash.jsonl", "r") as f:
+with open(FILE_NAME_OUT, "r") as f:
     for line in f:
         d = json.loads(line)
         result_id_llm_eval_set.add(str(d['id']) + "_" + d['model'] + "_" + str(d.get('enable_thinking', False)))
@@ -181,7 +192,7 @@ with concurrent.futures.ThreadPoolExecutor(max_workers=16) as executor:
             result = future.result()
             if result:
                 with file_lock:
-                    with open("gsm8k_sc_completion_results_llm_eval_gemini2_5_flash.jsonl", "a") as f:
+                    with open(FILE_NAME_OUT, "a") as f:
                         f.write(json.dumps(result) + "\n")
                     result_id_set.add(str(result['id']) + "_" + result['model'] + "_" + str(result.get('enable_thinking', False)))
         except concurrent.futures.TimeoutError:
