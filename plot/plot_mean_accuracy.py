@@ -7,65 +7,7 @@ from evaluation.evaluate_tool import get_is_correct_answer
 from evaluation.evaluate_scli5 import load_scli5_eval_data
 from evaluation.evaluate_gsm8k_sc import load_gsm8k_sc_eval_data
 from evaluation.evaluate_prm800k_sc import load_prm800k_sc_eval_data
-
-
-NON_REASONING_MODELS = [
-    "meta-llama/Meta-Llama-3.1-8B-Instruct",
-    "meta-llama/Llama-3.3-70B-Instruct",
-    "meta-llama/Llama-4-Scout-17B-16E-Instruct",
-    "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
-    "Qwen/Qwen2-7B-Instruct",
-    "Qwen/Qwen2.5-7B-Instruct",
-    "Qwen/Qwen2.5-72B-Instruct",
-    "Qwen/Qwen3-14B",
-    "Qwen/Qwen3-32B",
-    "Qwen/Qwen3-30B-A3B",
-    "Qwen/Qwen3-235B-A22B",
-    "deepseek-ai/DeepSeek-V3-0324",
-    "mistralai/Mistral-Small-24B-Instruct-2501",
-    "microsoft/phi-4",
-]
-
-REASONING_MODELS = [
-    "Qwen/QwQ-32B",
-    "Qwen/Qwen3-14B_thinking",
-    "Qwen/Qwen3-32B_thinking",
-    "Qwen/Qwen3-30B-A3B_thinking",
-    "Qwen/Qwen3-235B-A22B_thinking",
-    "deepseek-ai/DeepSeek-R1-0528",
-    "google/gemma-3-4b-it",
-    "google/gemma-3-12b-it",
-    "google/gemma-3-27b-it",
-    "microsoft/phi-4-reasoning-plus",
-]
-
-# Model name mapping for cleaner display
-MODEL_LIST = {
-    "meta-llama/Meta-Llama-3.1-8B-Instruct": "Llama-3.1-8B-Instruct",
-    "meta-llama/Llama-3.3-70B-Instruct": "Llama-3.3-70B-Instruct",
-    "meta-llama/Llama-4-Scout-17B-16E-Instruct": "Llama-4-Scout-17B-16E-Instruct-FP8-dynamic",
-    "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8": "Llama-4-Maverick-17B-128E-Instruct-FP8",
-    "Qwen/Qwen2-7B-Instruct": "Qwen2-7B-Instruct",
-    "Qwen/Qwen2.5-7B-Instruct": "Qwen2.5-7B-Instruct",
-    "Qwen/Qwen2.5-72B-Instruct": "Qwen2.5-72B-Instruct",
-    "Qwen/QwQ-32B": "QwQ-32B",
-    "Qwen/Qwen3-14B": "Qwen3-14B",
-    "Qwen/Qwen3-14B_thinking": "Qwen3-14B (thinking)",
-    "Qwen/Qwen3-32B": "Qwen3-32B",
-    "Qwen/Qwen3-32B_thinking": "Qwen3-32B (thinking)",
-    "Qwen/Qwen3-30B-A3B": "Qwen3-30B-A3B",
-    "Qwen/Qwen3-30B-A3B_thinking": "Qwen3-30B-A3B (thinking)",
-    "Qwen/Qwen3-235B-A22B": "Qwen3-235B-A22B",
-    "Qwen/Qwen3-235B-A22B_thinking": "Qwen3-235B-A22B (thinking)",
-    "deepseek-ai/DeepSeek-V3-0324": "DeepSeek-V3-0324",
-    "deepseek-ai/DeepSeek-R1-0528": "DeepSeek-R1-0528",
-    "mistralai/Mistral-Small-24B-Instruct-2501": "Mistral-Small-24B-Instruct-2501",
-    "google/gemma-3-4b-it": "gemma-3-4b-it",
-    "google/gemma-3-12b-it": "gemma-3-12b-it",
-    "google/gemma-3-27b-it": "gemma-3-27b-it",
-    "microsoft/phi-4": "Phi-4",
-    "microsoft/phi-4-reasoning-plus": "Phi-4-reasoning-plus",
-}
+from plot.constants import MODEL_LIST, NON_REASONING_MODELS, REASONING_MODELS
 
 
 def get_error_injection_model_data():
@@ -112,7 +54,7 @@ def get_error_injection_model_data():
     
     # PRM800K-SC - uses BCA and ACA fields
     print("Loading PRM800K-SC data...")
-    prm800k_data = load_prm800k_sc_eval_data()
+    prm800k_data = load_prm800k_sc_eval_data(supplement=True)
     prm800k_df = pd.DataFrame([[d["model"], get_is_correct_answer(d, "llm_evaluation_bca"), get_is_correct_answer(d, "llm_evaluation_aca"),
                                 not bool(d["response_error_injection_in_model_bca"]), not bool(d["response_error_injection_in_model_aca"]),
                                 get_is_correct_answer(d, "llm_evaluation_bca_wait"), get_is_correct_answer(d, "llm_evaluation_aca_wait")] 
@@ -261,7 +203,9 @@ def plot_error_injection_model_macro_averages(model_list, output_file, config="d
     df_sorted = df.loc[sorted_models]
     df_sem_sorted = df_sem.loc[sorted_models]
     print(sorted_models)
+    df_sorted['macro_average'] = df_sorted.mean(axis=1)
     print(df_sorted.round(3).astype(str).to_latex())
+    del df_sorted['macro_average']
     
     # Prepare data for plotting
     macro_values = [df_sorted.loc[model].mean() for model in sorted_models]
@@ -295,7 +239,7 @@ def plot_error_injection_model_macro_averages(model_list, output_file, config="d
     # Customize plot
     ax.set_xlabel('Models', fontsize=12)
     ax.set_ylabel('Accuracy', fontsize=12)
-    ax.set_title('Error Injection Model Accuracy by Dataset and Macro Average (95% Confidence Intervals)', fontsize=14, fontweight='bold')
+    ax.set_title('Mean accuracy and macro average (95% confidence intervals) after injection of external error', fontsize=14, fontweight='bold')
     ax.set_xticks(x)
     
     # Use shortened model names for x-axis labels
@@ -381,7 +325,7 @@ def plot_error_in_error_injection_model_macro_averages(model_list, output_file):
     # Customize plot
     ax.set_xlabel('Models', fontsize=12)
     ax.set_ylabel('Error', fontsize=12)
-    ax.set_title('Error and Non-Responseby Dataset and  Model', fontsize=14, fontweight='bold')
+    ax.set_title('Error and non-response by dataset and model', fontsize=14, fontweight='bold')
     ax.set_xticks(x)
     
     # Use shortened model names for x-axis labels
@@ -415,7 +359,7 @@ def plot_correlation_between_macro_averages_by_dataset(model_list, output_file):
     
     # Subplot 1: Correlation heatmap (existing)
     sns.heatmap(corr_matrix, annot=True, cmap='coolwarm', vmin=-1, vmax=1, center=0, ax=ax1)
-    ax1.set_title('Correlation Matrix by Dataset', fontsize=14, fontweight='bold')
+    ax1.set_title('Correlation matrix of \nmean accuracy across datasets', fontsize=14, fontweight='bold')
     
     # Subplot 2: SCLI5 vs GSM8K_SC scatter plot
     x_data = df['scli5']
@@ -449,8 +393,8 @@ def plot_correlation_between_macro_averages_by_dataset(model_list, output_file):
     # Calculate correlation coefficient
     corr_coef = corr_matrix.loc['scli5', 'gsm8k_sc']
     
-    ax2.set_xlabel('SCLI5 Macro Average', fontsize=12)
-    ax2.set_ylabel('GSM8K-SC Macro Average', fontsize=12)
+    ax2.set_xlabel('SCLI5 macro average', fontsize=12)
+    ax2.set_ylabel('GSM8K-SC macro average', fontsize=12)
     ax2.set_title(f'SCLI5 vs GSM8K-SC\n(r = {corr_coef:.3f})', fontsize=12, fontweight='bold')
     ax2.grid(True, alpha=0.3)
     ax2.legend(loc='best')
@@ -487,8 +431,8 @@ def plot_correlation_between_macro_averages_by_dataset(model_list, output_file):
     # Calculate correlation coefficient
     corr_coef = corr_matrix.loc['gsm8k_sc', 'prm800k_sc']
     
-    ax3.set_xlabel('GSM8K-SC Macro Average', fontsize=12)
-    ax3.set_ylabel('PRM800K-SC Macro Average', fontsize=12)
+    ax3.set_xlabel('GSM8K-SC macro average', fontsize=12)
+    ax3.set_ylabel('PRM800K-SC macro average', fontsize=12)
     ax3.set_title(f'GSM8K-SC vs PRM800K-SC\n(r = {corr_coef:.3f})', fontsize=12, fontweight='bold')
     ax3.grid(True, alpha=0.3)
     ax3.legend(loc='best')
@@ -538,8 +482,8 @@ def plot_no_wait_vs_wait_macro_averages(model_list, output_file):
 
 
     ax.set_xlabel('Models', fontsize=12)
-    ax.set_ylabel('Macro Average Accuracy', fontsize=12)
-    ax.set_title('Macro Average Accuracy by Model Increases from Original to Appended Wait', fontsize=14, fontweight='bold')
+    ax.set_ylabel('Macro average accuracy', fontsize=12)
+    ax.set_title('Macro average accuracy increases from original to appended Wait', fontsize=14, fontweight='bold')
     ax.set_xticks(x)
     
     # Use shortened model names for x-axis labels
@@ -562,9 +506,9 @@ if __name__ == "__main__":
 
     plot_error_injection_model_macro_averages(sorted_non_reasoning_models,
                                               'output/error_injection_model_macro_averages_non_reasoning.png')
-    plot_error_injection_model_macro_averages(sorted_non_reasoning_models,
-                                              'output/error_injection_model_macro_averages_non_reasoning_wait.png',
-                                              config="wait")
+    # plot_error_injection_model_macro_averages(sorted_non_reasoning_models,
+    #                                           'output/error_injection_model_macro_averages_non_reasoning_wait.png',
+    #                                           config="wait")
     
     plot_no_wait_vs_wait_macro_averages(sorted_non_reasoning_models,
                                        'output/error_injection_model_macro_averages_non_reasoning_no_wait_vs_wait.png')
@@ -584,5 +528,3 @@ if __name__ == "__main__":
                                               'output/error_injection_model_macro_averages_reasoning.png')
     plot_error_in_error_injection_model_macro_averages(sorted_reasoning_models,
                                                        'output/error_in_error_injection_model_macro_averages_reasoning.png')
-    plot_correlation_between_macro_averages_by_dataset(sorted_reasoning_models,
-                                                       'output/error_injection_model_correlation_matrix_reasoning.png')
