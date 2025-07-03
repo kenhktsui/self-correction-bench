@@ -4,14 +4,16 @@ import random
 from copy import deepcopy
 import concurrent.futures
 import threading
+import queue
 from functools import partial
 from tqdm import tqdm
 from datasets import load_dataset
 from openai import OpenAI
 from llm_inference.prompt import get_prompt_eos_token
+from llm_inference.constants import MODEL_LIST
 
 
-TEMPERATURE = 0.6
+TEMPERATURE = 0.0
 FILE_NAME = "prm800k_sc_completion_results_api.jsonl" if TEMPERATURE == 0.0 else f"prm800k_sc_completion_results_api_{str(TEMPERATURE).replace('.', '_')}.jsonl"
 
 if os.path.exists(FILE_NAME):
@@ -21,39 +23,11 @@ else:
         pass
 
 
-MODEL_LIST = {
-    "meta-llama/Llama-3.3-70B-Instruct": "meta-llama/Llama-3.3-70B-Instruct",
-    "meta-llama/Llama-4-Scout-17B-16E-Instruct": "RedHatAI/Llama-4-Scout-17B-16E-Instruct-FP8-dynamic",
-    "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8": "RedHatAI/Llama-4-Maverick-17B-128E-Instruct-FP8",
-    "Qwen/Qwen3-235B-A22B": "Qwen/Qwen3-235B-A22B",
-    "Qwen/Qwen3-30B-A3B": "Qwen/Qwen3-30B-A3B",
-    "Qwen/Qwen3-32B": "Qwen/Qwen3-32B",
-    "Qwen/Qwen3-14B": "Qwen/Qwen3-14B",
-    "Qwen/Qwen3-235B-A22B_thinking": "Qwen/Qwen3-235B-A22B",
-    "Qwen/Qwen3-30B-A3B_thinking": "Qwen/Qwen3-30B-A3B",
-    "Qwen/Qwen3-32B_thinking": "Qwen/Qwen3-32B",
-    "Qwen/Qwen3-14B_thinking": "Qwen/Qwen3-14B",
-    "Qwen/Qwen2.5-72B-Instruct": "Qwen/Qwen2.5-72B-Instruct",
-    "Qwen/Qwen2.5-7B-Instruct": "Qwen/Qwen2.5-7B-Instruct",
-    "Qwen/Qwen2-7B-Instruct": "Qwen/Qwen2-7B-Instruct",
-    "deepseek-ai/DeepSeek-V3-0324": "deepseek-ai/DeepSeek-V3-0324",
-    "mistralai/Mistral-Small-24B-Instruct-2501": "mistralai/Mistral-Small-24B-Instruct-2501",
-    "google/gemma-3-27b-it": "google/gemma-3-27b-it",
-    "google/gemma-3-12b-it": "google/gemma-3-12b-it",
-    "google/gemma-3-4b-it": "google/gemma-3-4b-it",
-    "meta-llama/Meta-Llama-3.1-8B-Instruct": "meta-llama/Llama-3.1-8B-Instruct",
-    "microsoft/phi-4": "microsoft/phi-4",
-    "microsoft/phi-4-reasoning-plus": "microsoft/Phi-4-reasoning-plus",
-    "deepseek-ai/DeepSeek-R1-0528": "deepseek-ai/DeepSeek-R1-0528",
-    "Qwen/QwQ-32B": "Qwen/QwQ-32B",
-}
-
-
 dataset = load_dataset("kenhktsui/prm800k_sc", split="test")
 
 
 # Create an OpenAI client with your deepinfra token and endpoint
-deepinfra_client = OpenAI(api_key=os.environ.get("DEEPINFRA_API_KEY"), base_url="https://api.deepinfra.com/v1/openai", timeout=180)
+deepinfra_client = OpenAI(api_key=os.environ.get("DEEPINFRA_API_KEY"), base_url="https://api.deepinfra.com/v1/openai", timeout=300)
 
 
 id_set = set()
@@ -88,7 +62,6 @@ def openai_client_process_item(client, item_tuple):
         response = client.completions.create(
             model=model,
             prompt=prompt,
-            max_tokens=1024,
             temperature=TEMPERATURE,
             stop=[eos_token]
         )
@@ -158,22 +131,41 @@ def openai_client_process_item(client, item_tuple):
 
 deepinfra_client_process_item = partial(openai_client_process_item, deepinfra_client)
 
-file_lock = threading.Lock()
+result_queue = queue.Queue()
+writer_finished = threading.Event()
 
-with open(FILE_NAME, "a") as f:
-    items_to_process = []
-    for model, hf_tokenizer_name in MODEL_LIST.items():
-        for d in dataset:
-            items_to_process.append((model, hf_tokenizer_name, d))
+def writer_thread():
+    with open(FILE_NAME, "a") as f:
+        while not writer_finished.is_set() or not result_queue.empty():
+            try:
+                result = result_queue.get(timeout=1)
+                f.write(json.dumps(result) + "\n")
+                f.flush() # ensure immediate write
+                id_set.add(str(result['question']) + "_" + result['model'] + "_" + str(result.get('enable_thinking', False)))
+                result_queue.task_done()
+            except queue.Empty:
+                continue
 
-    # shuffle the model to reduce the chance of concurrent requests to the same model
-    random.shuffle(items_to_process)
+# Start the writer thread
+writer = threading.Thread(target=writer_thread, daemon=True)
+writer.start()
 
-    with concurrent.futures.ThreadPoolExecutor(max_workers=16) as executor:
-        futures = [executor.submit(deepinfra_client_process_item, item) for item in items_to_process]
-        for future in tqdm(concurrent.futures.as_completed(futures), total=len(items_to_process)):
-            result = future.result()
-            if result:
-                with file_lock:
-                    f.write(json.dumps(result) + "\n")
-                    id_set.add(str(result['question']) + "_" + result['model'] + "_" + str(d.get('enable_thinking', False)))
+
+items_to_process = []
+for model, hf_tokenizer_name in MODEL_LIST.items():
+    for d in dataset:
+        items_to_process.append((model, hf_tokenizer_name, d))
+
+# shuffle the model to reduce the chance of concurrent requests to the same model
+random.shuffle(items_to_process)
+
+with concurrent.futures.ThreadPoolExecutor(max_workers=16) as executor:
+    futures = [executor.submit(deepinfra_client_process_item, item) for item in items_to_process]
+    for future in tqdm(concurrent.futures.as_completed(futures), total=len(items_to_process)):
+        result = future.result()
+        if result:
+            result_queue.put(result)
+
+# Signal writer thread to finish and wait for it
+writer_finished.set()
+writer.join()
