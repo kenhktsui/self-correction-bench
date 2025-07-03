@@ -24,3 +24,21 @@ MODEL_LIST = {
     "deepseek-ai/DeepSeek-R1-0528": "deepseek-ai/DeepSeek-R1-0528",
     "Qwen/QwQ-32B": "Qwen/QwQ-32B",
 }
+
+
+NON_RESAONING_MODEL_LIST = {
+    "meta-llama/Llama-3.3-70B-Instruct": "meta-llama/Llama-3.3-70B-Instruct",
+    "meta-llama/Llama-4-Scout-17B-16E-Instruct": "RedHatAI/Llama-4-Scout-17B-16E-Instruct-FP8-dynamic",
+    "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8": "RedHatAI/Llama-4-Maverick-17B-128E-Instruct-FP8",
+    "Qwen/Qwen3-235B-A22B": "Qwen/Qwen3-235B-A22B",
+    "Qwen/Qwen3-30B-A3B": "Qwen/Qwen3-30B-A3B",
+    "Qwen/Qwen3-32B": "Qwen/Qwen3-32B",
+    "Qwen/Qwen3-14B": "Qwen/Qwen3-14B",
+    "Qwen/Qwen2.5-72B-Instruct": "Qwen/Qwen2.5-72B-Instruct",
+    "Qwen/Qwen2.5-7B-Instruct": "Qwen/Qwen2.5-7B-Instruct",
+    "Qwen/Qwen2-7B-Instruct": "Qwen/Qwen2-7B-Instruct",
+    "deepseek-ai/DeepSeek-V3-0324": "deepseek-ai/DeepSeek-V3-0324",
+    "mistralai/Mistral-Small-24B-Instruct-2501": "mistralai/Mistral-Small-24B-Instruct-2501",
+    "meta-llama/Meta-Llama-3.1-8B-Instruct": "meta-llama/Llama-3.1-8B-Instruct",
+    "microsoft/phi-4": "microsoft/phi-4",
+}
