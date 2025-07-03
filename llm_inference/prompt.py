@@ -1,5 +1,7 @@
 from transformers import AutoTokenizer
 
+# Global tokenizer cache to avoid repeated loading
+_tokenizer_cache = {}
 
 def get_prompt_eos_token(
                          model,
@@ -9,7 +11,12 @@ def get_prompt_eos_token(
                          continue_final_message,
                          enable_thinking
                          ):
-    tokenizer = AutoTokenizer.from_pretrained(hf_tokenizer_name)
+    # Use cached tokenizer if available, otherwise load and cache it
+    if hf_tokenizer_name not in _tokenizer_cache:
+        _tokenizer_cache[hf_tokenizer_name] = AutoTokenizer.from_pretrained(hf_tokenizer_name)
+
+    tokenizer = _tokenizer_cache[hf_tokenizer_name]
+    
     # for Qwen/Qwen3, we need to handle the case of rasoning and non-reasoning models
     if model.startswith("Qwen/Qwen3") and enable_thinking and continue_final_message:
         assert messages[-1]["role"] == "assistant"
