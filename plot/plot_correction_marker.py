@@ -116,8 +116,6 @@ for dataset_name, data in data_dict.items():
         df = df.groupby('model').mean()
         df['marker_change'] = (df['marker_response_error_injection_in_model_wait'] - df['marker_response_error_injection_in_model'])
         df['accuracy_change'] = (df['accuracy_response_error_injection_in_model_wait'] - df['accuracy_response_error_injection_in_model'])
-        df['marker_diff_user'] = (df['marker_response_error_in_user'] - df['marker_response_error_injection_in_model'])
-        df['accuracy_diff_user'] = (df['accuracy_response_error_in_user'] - df['accuracy_response_error_injection_in_model'])
         marker_df[dataset_name] = df
 
 
@@ -125,9 +123,8 @@ for d, df in marker_df.items():
     print(d)
     print(df[['marker_response_error_in_user', 'marker_response_error_injection_in_model']])
     print("User / Model Error Marker Increase", df['marker_response_error_in_user'].mean(axis=0)/ df['marker_response_error_injection_in_model'].mean(axis=0) - 1)
-    print(df[['marker_change', 'accuracy_change', 'marker_diff_user', 'accuracy_diff_user']])
+    print(df[['marker_change', 'accuracy_change']])
     print(df[['marker_change', 'accuracy_change']].corr())
-    print(df[['marker_diff_user', 'accuracy_diff_user']].corr())
     print('-'*100)
 
 # Create correlation plots
