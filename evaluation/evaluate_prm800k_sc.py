@@ -3,10 +3,10 @@ import pandas as pd
 from evaluation.evaluate_tool import get_is_correct_answer
 
 
-def load_prm800k_sc_eval_data():
+def load_prm800k_sc_eval_data(temperature=0.0, supplement=False):
     data_with_llm_eval = []
-    record_hash = set()
-    with open("prm800k_sc_completion_results_llm_eval_gemini2_5_flash.jsonl", "r") as f:
+    record_hash = {}
+    with open(f"prm800k_sc_completion_results_llm_eval_gemini2_5_flash_{str(temperature).replace('.', '_')}.jsonl", "r") as f:
         for line in f:
             d = json.loads(line)
             d['model'] = d['model'] + '_thinking' if d.get('enable_thinking') else d['model']
@@ -14,8 +14,41 @@ def load_prm800k_sc_eval_data():
 
             if key not in record_hash:
                 data_with_llm_eval.append(d)
-                record_hash.add(key)
+                record_hash[key] = d
 
+    # load supplement data (with limit of 4,096 output token) and override the original data with a limit of output token length >= 1024
+    if supplement:
+        with open(f"prm800k_sc_completion_results_llm_eval_gemini2_5_flash_supplement_{str(temperature).replace('.', '_')}.jsonl", "r") as f:
+            for line in f:
+                d = json.loads(line)
+                d['model'] = d['model'] + '_thinking' if d.get('enable_thinking') else d['model']
+                key = str(d['question']) + "_" + d['model']
+                # retrieve the original record
+                orginal_d = record_hash[key]
+
+                for k in  [
+                    "response_error_injection_in_model_bca",
+                    "response_error_injection_in_model_aca",
+                    "response_error_in_user_bca",
+                    "response_error_in_user_aca",
+                    "response_error_injection_in_model_bca_wait",
+                    "response_error_injection_in_model_aca_wait",
+                    "llm_evaluation_system_prompt",
+                    "llm_evaluation_prompt_bca",
+                    "llm_evaluation_bca",
+                    "llm_evaluation_prompt_aca",
+                    "llm_evaluation_aca",
+                    "llm_evaluation_prompt_error_in_user_bca",
+                    "llm_evaluation_error_in_user_bca",
+                    "llm_evaluation_prompt_error_in_user_aca",
+                    "llm_evaluation_error_in_user_aca",
+                    "llm_evaluation_prompt_bca_wait",
+                    "llm_evaluation_bca_wait",
+                    "llm_evaluation_prompt_aca_wait",
+                    "llm_evaluation_aca_wait",                    
+                ]:
+                    if d[k] is not None:
+                        orginal_d[k] = d[k]                 
     return data_with_llm_eval
 
 if __name__ == "__main__":

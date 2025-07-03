@@ -3,12 +3,17 @@ import pandas as pd
 from evaluation.evaluate_tool import get_is_correct_answer
 
 
-def load_scli5_eval_data():
+def load_scli5_eval_data(temperature=0.0):
     data_with_llm_eval = []
     record_hash = set()
-    with open("scli5_completion_results_llm_eval_gemini2_5_flash.jsonl", "r") as f:
+    with open(f"scli5_completion_results_llm_eval_gemini2_5_flash_{str(temperature).replace('.', '_')}.jsonl", "r") as f:
         for line in f:
             d = json.loads(line)
+
+            # counting_letter and counting_digit were considered at the beginning, but were removed as counting needs multiple steps of reasoning
+            if d['question_type'] in ["counting_letter", "counting_digit"]:
+                continue
+
             d['model'] = d['model'] + '_thinking' if d.get('enable_thinking') else d['model']
             key = str(d['id']) + "_" + d['model']
             if key not in record_hash:
