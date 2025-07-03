@@ -15,9 +15,9 @@ from evaluation_with_llm.eval_prompt import (
 )
 
 
-TEMPERATURE = 0.6
+TEMPERATURE = 0.0
 FILE_NAME_IN =  "scli5_completion_results_api.jsonl" if TEMPERATURE == 0.0 else f"scli5_completion_results_api_{str(TEMPERATURE).replace('.', '_')}.jsonl"
-FILE_NAME_OUT = "scli5_completion_results_llm_eval_gemini2_5_flash.jsonl" if TEMPERATURE == 0.0 else f"scli5_completion_results_llm_eval_gemini2_5_flash_{str(TEMPERATURE).replace('.', '_')}.jsonl"
+FILE_NAME_OUT = f"scli5_completion_results_llm_eval_gemini2_5_flash_{str(TEMPERATURE).replace('.', '_')}.jsonl"
 
 if os.path.exists(FILE_NAME_OUT):
     print(f"File {FILE_NAME_OUT} already exists.")

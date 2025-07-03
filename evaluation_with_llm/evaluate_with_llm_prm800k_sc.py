@@ -17,9 +17,9 @@ from evaluation_with_llm.eval_prompt import (
 )
 
 
-TEMPERATURE = 0.6
+TEMPERATURE = 0.0
 FILE_NAME_IN = "prm800k_sc_completion_results_api.jsonl" if TEMPERATURE == 0.0 else f"prm800k_sc_completion_results_api_{str(TEMPERATURE).replace('.', '_')}.jsonl"
-FILE_NAME_OUT = "prm800k_sc_completion_results_llm_eval_gemini2_5_flash.jsonl" if TEMPERATURE == 0.0 else f"prm800k_sc_completion_results_llm_eval_gemini2_5_flash_{str(TEMPERATURE).replace('.', '_')}.jsonl"
+FILE_NAME_OUT = f"prm800k_sc_completion_results_llm_eval_gemini2_5_flash_{str(TEMPERATURE).replace('.', '_')}.jsonl"
 
 if os.path.exists(FILE_NAME_OUT):
     print(f"File {FILE_NAME_OUT} already exists.")
@@ -33,7 +33,7 @@ correct_answer = {d['question']: d['ground_truth_answer'] for d in dataset}
 
 
 client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"),
-                      http_options=types.HttpOptions(api_version='v1alpha')
+                      http_options=types.HttpOptions(api_version='v1alpha', timeout=60 * 10 * 1000)
                     )
 
 
