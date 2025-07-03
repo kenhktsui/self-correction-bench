@@ -1,12 +1,13 @@
-import json
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+import seaborn as sns
 from evaluation.evaluate_tool import get_is_correct_answer
 from evaluation.evaluate_scli5 import load_scli5_eval_data
 from evaluation.evaluate_gsm8k_sc import load_gsm8k_sc_eval_data
 from evaluation.evaluate_prm800k_sc import load_prm800k_sc_eval_data
-from plot.plot_error_injection_model_accuracy import MODEL_LIST,  NON_REASONING_MODELS, REASONING_MODELS, get_error_injection_model_data, construct_data_matrix
+from plot.constants import MODEL_LIST, NON_REASONING_MODELS, REASONING_MODELS
+from plot.plot_mean_accuracy import get_error_injection_model_data, construct_data_matrix
 
 
 def calculate_blind_spot(dataset, question_types=None, field_mapping=None):
@@ -49,15 +50,12 @@ def calculate_blind_spot(dataset, question_types=None, field_mapping=None):
         }
     }
     
-    # Use custom field mapping if provided, otherwise use default
     if field_mapping is None:
         field_mapping = default_mappings.get(dataset, {})
     
-    # Load data based on dataset
     if dataset == 'scli5':
         data_with_llm_eval = load_scli5_eval_data()
         
-        # Filter by question types if specified
         if question_types:
             filtered_data = []
             for d in data_with_llm_eval:
@@ -66,23 +64,19 @@ def calculate_blind_spot(dataset, question_types=None, field_mapping=None):
                     filtered_data.append(d)
             data_with_llm_eval = filtered_data
         
-        # SCLI5 uses single evaluation fields
         df = pd.DataFrame([[d["model"], 
                            get_is_correct_answer(d, field_mapping.get('error_in_model', 'llm_evaluation')), 
                            get_is_correct_answer(d, field_mapping.get('error_in_user', 'llm_evaluation_error_in_user'))] 
                           for d in data_with_llm_eval],
                          columns=["model", "error_in_model", "error_in_user"])
         
-        # Calculate blind spot by model
         blind_spot_by_model = df.groupby("model").agg({
             'error_in_model': ['mean', 'std'],
             'error_in_user': ['mean', 'std']
         })
         
-        # Get sample sizes for each model
         sample_sizes = df.groupby("model").size()
         
-        # Calculate blind spot mean and standard error
         blind_spot_mean = {}
         blind_spot_sem = {}
         
@@ -113,10 +107,9 @@ def calculate_blind_spot(dataset, question_types=None, field_mapping=None):
         return {'mean': blind_spot_mean, 'sem': blind_spot_sem}
     
     elif dataset in ['gsm8k', 'prm800k']:
-        # Load data based on dataset
         if dataset == 'gsm8k':
             data_with_llm_eval = load_gsm8k_sc_eval_data()
-        else:  # prm800k
+        else:
             data_with_llm_eval = load_prm800k_sc_eval_data()
         
         # GSM8K-SC and PRM800K-SC use BCA/ACA fields
@@ -129,7 +122,6 @@ def calculate_blind_spot(dataset, question_types=None, field_mapping=None):
                          columns=["model", "error_in_model_bca", "error_in_model_aca", 
                                  "error_in_user_bca", "error_in_user_aca"])
         
-        # Calculate blind spot by model
         blind_spot_by_model = df.groupby("model").agg({
             'error_in_model_bca': ['mean', 'std'],
             'error_in_model_aca': ['mean', 'std'],
@@ -137,23 +129,19 @@ def calculate_blind_spot(dataset, question_types=None, field_mapping=None):
             'error_in_user_aca': ['mean', 'std']
         })
         
-        # Get sample sizes for each model
         sample_sizes = df.groupby("model").size()
         
-        # Calculate blind spot mean and standard error for BCA and ACA
         blind_spot_mean_bca = {}
         blind_spot_sem_bca = {}
         blind_spot_mean_aca = {}
         blind_spot_sem_aca = {}
         
         for model in blind_spot_by_model.index:
-            # BCA calculations
             error_in_model_bca_mean = blind_spot_by_model.loc[model, ('error_in_model_bca', 'mean')]
             error_in_user_bca_mean = blind_spot_by_model.loc[model, ('error_in_user_bca', 'mean')]
             error_in_model_bca_std = blind_spot_by_model.loc[model, ('error_in_model_bca', 'std')]
             error_in_user_bca_std = blind_spot_by_model.loc[model, ('error_in_user_bca', 'std')]
             
-            # ACA calculations
             error_in_model_aca_mean = blind_spot_by_model.loc[model, ('error_in_model_aca', 'mean')]
             error_in_user_aca_mean = blind_spot_by_model.loc[model, ('error_in_user_aca', 'mean')]
             error_in_model_aca_std = blind_spot_by_model.loc[model, ('error_in_model_aca', 'std')]
@@ -161,19 +149,16 @@ def calculate_blind_spot(dataset, question_types=None, field_mapping=None):
             
             n = sample_sizes[model]
             
-            # Calculate BCA blind spot
             if error_in_user_bca_mean > 0:
                 blind_spot_mean_bca[model] = (error_in_user_bca_mean - error_in_model_bca_mean) / error_in_user_bca_mean
             else:
                 blind_spot_mean_bca[model] = 0
             
-            # Calculate ACA blind spot
             if error_in_user_aca_mean > 0:
                 blind_spot_mean_aca[model] = (error_in_user_aca_mean - error_in_model_aca_mean) / error_in_user_aca_mean
             else:
                 blind_spot_mean_aca[model] = 0
             
-            # Standard error calculations for BCA
             if error_in_user_bca_mean > 0 and n > 0:
                 error_in_model_bca_sem = error_in_model_bca_std / np.sqrt(n)
                 error_in_user_bca_sem = error_in_user_bca_std / np.sqrt(n)
@@ -184,7 +169,6 @@ def calculate_blind_spot(dataset, question_types=None, field_mapping=None):
             else:
                 blind_spot_sem_bca[model] = 0
             
-            # Standard error calculations for ACA
             if error_in_user_aca_mean > 0 and n > 0:
                 error_in_model_aca_sem = error_in_model_aca_std / np.sqrt(n)
                 error_in_user_aca_sem = error_in_user_aca_std / np.sqrt(n)
@@ -203,7 +187,7 @@ def calculate_blind_spot(dataset, question_types=None, field_mapping=None):
     else:
         raise ValueError(f"Unknown dataset: {dataset}. Must be 'scli5', 'gsm8k', or 'prm800k'")
 
-# Legacy function names for backward compatibility
+
 def calculate_blind_spot_scli5(question_types=None):
     """Calculate blind spot for SCLI5 dataset with optional question type filtering"""
     return calculate_blind_spot('scli5', question_types)
@@ -216,7 +200,6 @@ def calculate_blind_spot_prm800k():
     """Calculate blind spot for PRM800K-SC dataset"""
     return calculate_blind_spot('prm800k')
 
-# Helper functions for different settings
 def calculate_blind_spot_scli5_wait(question_types=None):
     """Calculate blind spot for SCLI5 dataset using wait fields"""
     field_mapping = {
@@ -331,7 +314,6 @@ def plot_blind_spot_summary_generic(model_list, filename_suffix, setting='defaul
     
     config = setting_configs[setting]
     
-    # Calculate blind spot for each dataset using the specified functions
     scli5_result = config['scli5_func']()
     scli5_blind_spot_mean, scli5_blind_spot_sem = scli5_result['mean'], scli5_result['sem']
     gsm8k_blind_spot = config['gsm8k_func']()
@@ -340,7 +322,6 @@ def plot_blind_spot_summary_generic(model_list, filename_suffix, setting='defaul
     all_models = model_list
     datasets = config['dataset_labels']
     
-    # Create data matrix for means and standard errors
     data_matrix_mean = []
     data_matrix_sem = []
     
@@ -384,15 +365,12 @@ def plot_blind_spot_summary_generic(model_list, filename_suffix, setting='defaul
     data_matrix_mean = np.array(data_matrix_mean)
     data_matrix_sem = np.array(data_matrix_sem)
     
-    # Create the plot
     _, ax = plt.subplots(figsize=(16, 10))
     
-    # Set up bar positions
     x = np.arange(len(all_models))
     width = 0.15  # Width of bars
     multiplier = 0
     
-    # Colors for different datasets
     colors = ['#1f77b4', '#ff7f0e', '#fccea4', '#2ca02c', '#80ad80']
     
     # Create bars for each dataset
@@ -401,7 +379,6 @@ def plot_blind_spot_summary_generic(model_list, filename_suffix, setting='defaul
         values = data_matrix_mean[:, i]
         errors = data_matrix_sem[:, i]
         
-        # Filter out NaN values
         valid_indices = ~np.isnan(values)
         valid_x = x[valid_indices] + offset
         valid_values = values[valid_indices]
@@ -416,22 +393,20 @@ def plot_blind_spot_summary_generic(model_list, filename_suffix, setting='defaul
     # Customize the plot
     ax.set_xlabel('Models', fontsize=12)
     ax.set_ylabel('Self-Correction Blind Spot', fontsize=12)
-    ax.set_title(f'Blind Spot Summary Across Datasets{config["title_suffix"]} - 95% Confidence Intervals', 
+    ax.set_title(f'Blind Spot summary across datasets{config["title_suffix"]} - 95% Confidence Intervals', 
                 fontsize=14, fontweight='bold')
     ax.set_xticks(x + width * 2)  # Center the x-ticks
     ax.set_xticklabels([MODEL_LIST[model] for model in all_models], rotation=45, ha='right')
     ax.legend(loc='best')
     ax.grid(True, alpha=0.3, axis='y')
     
-    # Set y-axis limits to accommodate all values
-    ax.set_ylim(-1.2, 1.2)
+    ax.set_ylim(data_matrix_mean.min() - 1.96 * data_matrix_sem.max() - 0.02, data_matrix_mean.max() + 1.96 * data_matrix_sem.max() + 0.02)
     
     plt.legend(loc='best')
     plt.tight_layout()
     plt.savefig(f'output/blind_spot_summary_{setting}_{filename_suffix}.png', dpi=300, bbox_inches='tight')
     plt.show()
     
-    # Print summary statistics
     print(f"Blind Spot Summary Statistics{config['title_suffix']} - 95% Confidence Intervals:")
     print("=" * 80)
     
@@ -464,15 +439,13 @@ def plot_blind_spot_summary_cot(model_list, filename_suffix):
 def plot_blind_spot_correlation(model_list, filename_suffix):
     """Create correlation plot of blind spot scores across datasets for each model"""
     
-    # Calculate blind spot for each dataset
     scli5_result = calculate_blind_spot('scli5')
-    scli5_blind_spot_mean, scli5_blind_spot_sem = scli5_result['mean'], scli5_result['sem']
+    scli5_blind_spot_mean, _ = scli5_result['mean'], scli5_result['sem']
     gsm8k_blind_spot = calculate_blind_spot('gsm8k')
     prm800k_blind_spot = calculate_blind_spot('prm800k')
     
     all_models = model_list
     
-    # Prepare data for correlation analysis
     # Use BCA (Before commit answer) for GSM8K and PRM800K to match SCLI5
     correlation_data = []
     
@@ -480,16 +453,7 @@ def plot_blind_spot_correlation(model_list, filename_suffix):
         scli5_val = scli5_blind_spot_mean.get(model, np.nan)
         gsm8k_val = gsm8k_blind_spot['BCA']['mean'].get(model, np.nan)
         prm800k_val = prm800k_blind_spot['BCA']['mean'].get(model, np.nan)
-        
-        # Filter outliers (lower limit -0.2)
-        if not np.isnan(scli5_val) and scli5_val < -0.2:
-            scli5_val = np.nan
-        if not np.isnan(gsm8k_val) and gsm8k_val < -0.2:
-            gsm8k_val = np.nan
-        if not np.isnan(prm800k_val) and prm800k_val < -0.2:
-            prm800k_val = np.nan
-        
-        # Only include models that have data for all three datasets
+    
         if not (np.isnan(scli5_val) or np.isnan(gsm8k_val) or np.isnan(prm800k_val)):
             correlation_data.append({
                 'model': model,
@@ -502,31 +466,15 @@ def plot_blind_spot_correlation(model_list, filename_suffix):
         print("No models have complete data across all three datasets")
         return
     
-    # Create correlation matrix
     df_corr = pd.DataFrame(correlation_data)
     corr_matrix = df_corr[['SCLI5', 'GSM8K-SC (BCA)', 'PRM800K-SC (BCA)']].corr()
     
-    # Create the correlation plot
     fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(20, 6))
     
     # Plot 1: Correlation heatmap
-    im = ax1.imshow(corr_matrix, cmap='RdBu_r', vmin=-1, vmax=1, aspect='auto')
-    ax1.set_xticks(range(len(corr_matrix.columns)))
-    ax1.set_yticks(range(len(corr_matrix.columns)))
-    ax1.set_xticklabels(corr_matrix.columns, rotation=45, ha='right')
-    ax1.set_yticklabels(corr_matrix.columns)
-    ax1.set_title('Blind Spot Correlation Matrix (BCA)\n(Excluding outliers < -0.2)', fontsize=14, fontweight='bold')
-    
-    # Add correlation values as text
-    for i in range(len(corr_matrix.columns)):
-        for j in range(len(corr_matrix.columns)):
-            text = ax1.text(j, i, f'{corr_matrix.iloc[i, j]:.3f}',
-                           ha="center", va="center", color="black", fontweight='bold')
-    
-    # Add colorbar
-    cbar = plt.colorbar(im, ax=ax1)
-    cbar.set_label('Correlation Coefficient', rotation=270, labelpad=15)
-    
+    sns.heatmap(corr_matrix, ax=ax1, cmap='coolwarm', vmin=-1, vmax=1, center=0, annot=True)
+    ax1.set_title('Blind Spot correlation matrix', fontsize=14, fontweight='bold')
+
     # Plot 2: SCLI5 vs GSM8K-SC (BCA) scatter plot
     dataset1, dataset2 = 'SCLI5', 'GSM8K-SC (BCA)'
     corr_coef = corr_matrix.loc[dataset1, dataset2]
@@ -534,15 +482,12 @@ def plot_blind_spot_correlation(model_list, filename_suffix):
     x_data = df_corr[dataset1]
     y_data = df_corr[dataset2]
     
-    # Create scatter plot
     ax2.scatter(x_data, y_data, alpha=0.7, s=80, color='blue')
     
-    # Add trend line
     z = np.polyfit(x_data, y_data, 1)
     p = np.poly1d(z)
     ax2.plot(x_data, p(x_data), "r--", alpha=0.8, linewidth=2)
     
-    # Add model labels with better positioning
     for _, row_data in df_corr.iterrows():
         model_name = MODEL_LIST.get(row_data['model'], row_data['model'])
         # Shorten model names for better fit
@@ -556,11 +501,10 @@ def plot_blind_spot_correlation(model_list, filename_suffix):
     
     ax2.set_xlabel(f'{dataset1} Blind Spot Score', fontsize=12)
     ax2.set_ylabel(f'{dataset2} Blind Spot Score', fontsize=12)
-    ax2.set_title(f'Blind Spot Correlation: {dataset1} vs {dataset2}\n(r = {corr_coef:.3f}, Excluding outliers < -0.2)', 
+    ax2.set_title(f'Blind Spot correlation: {dataset1} vs {dataset2}\n(r = {corr_coef:.3f})', 
                  fontsize=12, fontweight='bold')
     ax2.grid(True, alpha=0.3)
     
-    # Add perfect correlation line for reference
     min_val = min(x_data.min(), y_data.min())
     max_val = max(x_data.max(), y_data.max())
     ax2.plot([min_val, max_val], [min_val, max_val], 'k:', alpha=0.5, label='Perfect correlation')
@@ -577,10 +521,8 @@ def plot_blind_spot_correlation(model_list, filename_suffix):
                    (pair[0] == 'GSM8K-SC (BCA)' and pair[1] == 'SCLI5')):
                 corr_pairs.append(pair)
     
-    # Sort by correlation strength
     corr_pairs.sort(key=lambda x: abs(x[2]), reverse=True)
     
-    # Use the strongest correlation for the third plot
     if corr_pairs:
         dataset1, dataset2, corr_coef = corr_pairs[0]
         
@@ -599,7 +541,6 @@ def plot_blind_spot_correlation(model_list, filename_suffix):
         # Add model labels with better positioning
         for _, row_data in df_corr.iterrows():
             model_name = MODEL_LIST.get(row_data['model'], row_data['model'])
-            # Shorten model names for better fit
             if len(model_name) > 20:
                 model_name = model_name[:17] + "..."
             ax3.annotate(model_name, 
@@ -610,7 +551,7 @@ def plot_blind_spot_correlation(model_list, filename_suffix):
         
         ax3.set_xlabel(f'{dataset1} Blind Spot Score', fontsize=12)
         ax3.set_ylabel(f'{dataset2} Blind Spot Score', fontsize=12)
-        ax3.set_title(f'Blind Spot Correlation: {dataset1} vs {dataset2}\n(r = {corr_coef:.3f}, Excluding outliers < -0.2)', 
+        ax3.set_title(f'Blind Spot correlation: {dataset1} vs {dataset2}\n(r = {corr_coef:.3f})', 
                      fontsize=12, fontweight='bold')
         ax3.grid(True, alpha=0.3)
         
@@ -625,7 +566,6 @@ def plot_blind_spot_correlation(model_list, filename_suffix):
     plt.savefig(f'output/blind_spot_correlation_bca_{filename_suffix}.png', dpi=300, bbox_inches='tight')
     plt.show()
     
-    # Print correlation statistics
     print("Blind Spot Correlation Analysis:")
     print("=" * 50)
     print(f"Number of models with complete data: {len(correlation_data)}")
@@ -633,7 +573,6 @@ def plot_blind_spot_correlation(model_list, filename_suffix):
     print(corr_matrix)
     
     # Calculate average correlation
-    # Get upper triangle of correlation matrix (excluding diagonal)
     upper_triangle = corr_matrix.where(np.triu(np.ones(corr_matrix.shape), k=1).astype(bool))
     avg_corr = upper_triangle.stack().mean()
     print(f"\nAverage correlation across datasets: {avg_corr:.3f}")
@@ -643,7 +582,6 @@ def plot_blind_spot_correlation(model_list, filename_suffix):
 def plot_blind_spot_correlation_aca(model_list, filename_suffix):
     """Create correlation plot of blind spot scores across datasets for each model using ACA"""
     
-    # Calculate blind spot for each dataset
     scli5_result = calculate_blind_spot('scli5')
     scli5_blind_spot_mean, _ = scli5_result['mean'], scli5_result['sem']
     gsm8k_blind_spot = calculate_blind_spot('gsm8k')
@@ -659,16 +597,7 @@ def plot_blind_spot_correlation_aca(model_list, filename_suffix):
         scli5_val = scli5_blind_spot_mean.get(model, np.nan)
         gsm8k_val = gsm8k_blind_spot['ACA']['mean'].get(model, np.nan)
         prm800k_val = prm800k_blind_spot['ACA']['mean'].get(model, np.nan)
-        
-        # Filter outliers (lower limit -0.2)
-        if not np.isnan(scli5_val) and scli5_val < -0.2:
-            scli5_val = np.nan
-        if not np.isnan(gsm8k_val) and gsm8k_val < -0.2:
-            gsm8k_val = np.nan
-        if not np.isnan(prm800k_val) and prm800k_val < -0.2:
-            prm800k_val = np.nan
-        
-        # Only include models that have data for all three datasets
+
         if not (np.isnan(scli5_val) or np.isnan(gsm8k_val) or np.isnan(prm800k_val)):
             correlation_data.append({
                 'model': model,
@@ -681,11 +610,9 @@ def plot_blind_spot_correlation_aca(model_list, filename_suffix):
         print("No models have complete data across all three datasets")
         return
     
-    # Create correlation matrix
     df_corr = pd.DataFrame(correlation_data)
     corr_matrix = df_corr[['SCLI5', 'GSM8K-SC (ACA)', 'PRM800K-SC (ACA)']].corr()
     
-    # Create the correlation plot
     fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(20, 6))
     
     # Plot 1: Correlation heatmap
@@ -694,15 +621,13 @@ def plot_blind_spot_correlation_aca(model_list, filename_suffix):
     ax1.set_yticks(range(len(corr_matrix.columns)))
     ax1.set_xticklabels(corr_matrix.columns, rotation=45, ha='right')
     ax1.set_yticklabels(corr_matrix.columns)
-    ax1.set_title('Blind Spot Correlation Matrix (ACA)\n(Excluding outliers < -0.2)', fontsize=14, fontweight='bold')
+    ax1.set_title('Blind Spot correlation matrix (ACA)', fontsize=14, fontweight='bold')
     
-    # Add correlation values as text
     for i in range(len(corr_matrix.columns)):
         for j in range(len(corr_matrix.columns)):
             text = ax1.text(j, i, f'{corr_matrix.iloc[i, j]:.3f}',
                            ha="center", va="center", color="black", fontweight='bold')
     
-    # Add colorbar
     cbar = plt.colorbar(im, ax=ax1)
     cbar.set_label('Correlation Coefficient', rotation=270, labelpad=15)
     
@@ -713,15 +638,12 @@ def plot_blind_spot_correlation_aca(model_list, filename_suffix):
     x_data = df_corr[dataset1]
     y_data = df_corr[dataset2]
     
-    # Create scatter plot
     ax2.scatter(x_data, y_data, alpha=0.7, s=80, color='blue')
     
-    # Add trend line
     z = np.polyfit(x_data, y_data, 1)
     p = np.poly1d(z)
     ax2.plot(x_data, p(x_data), "r--", alpha=0.8, linewidth=2)
     
-    # Add model labels with better positioning
     for _, row_data in df_corr.iterrows():
         model_name = MODEL_LIST.get(row_data['model'], row_data['model'])
         # Shorten model names for better fit
@@ -735,7 +657,7 @@ def plot_blind_spot_correlation_aca(model_list, filename_suffix):
     
     ax2.set_xlabel(f'{dataset1} Self-Correction Blind Spot', fontsize=12)
     ax2.set_ylabel(f'{dataset2} Self-Correction Blind Spot', fontsize=12)
-    ax2.set_title(f'Blind Spot Correlation: {dataset1} vs {dataset2}\n(r = {corr_coef:.3f}, Excluding outliers < -0.2)', 
+    ax2.set_title(f'Blind Spot correlation: {dataset1} vs {dataset2}\n(r = {corr_coef:.3f})', 
                  fontsize=12, fontweight='bold')
     ax2.grid(True, alpha=0.3)
     
@@ -756,10 +678,8 @@ def plot_blind_spot_correlation_aca(model_list, filename_suffix):
                    (pair[0] == 'GSM8K-SC (ACA)' and pair[1] == 'SCLI5')):
                 corr_pairs.append(pair)
     
-    # Sort by correlation strength
     corr_pairs.sort(key=lambda x: abs(x[2]), reverse=True)
     
-    # Use the strongest correlation for the third plot
     if corr_pairs:
         dataset1, dataset2, corr_coef = corr_pairs[0]
         
@@ -789,7 +709,7 @@ def plot_blind_spot_correlation_aca(model_list, filename_suffix):
         
         ax3.set_xlabel(f'{dataset1} Self-Correction Blind Spot', fontsize=12)
         ax3.set_ylabel(f'{dataset2} Self-Correction Blind Spot', fontsize=12)
-        ax3.set_title(f'Blind Spot Correlation: {dataset1} vs {dataset2}\n(r = {corr_coef:.3f}, Excluding outliers < -0.2)', 
+        ax3.set_title(f'Blind Spot correlation: {dataset1} vs {dataset2}\n(r = {corr_coef:.3f}', 
                      fontsize=12, fontweight='bold')
         ax3.grid(True, alpha=0.3)
         
@@ -804,7 +724,6 @@ def plot_blind_spot_correlation_aca(model_list, filename_suffix):
     plt.savefig(f'output/blind_spot_correlation_aca_{filename_suffix}.png', dpi=300, bbox_inches='tight')
     plt.show()
     
-    # Print correlation statistics
     print("Blind Spot Correlation Analysis (ACA):")
     print("=" * 50)
     print(f"Number of models with complete data: {len(correlation_data)}")
@@ -812,7 +731,6 @@ def plot_blind_spot_correlation_aca(model_list, filename_suffix):
     print(corr_matrix)
     
     # Calculate average correlation
-    # Get upper triangle of correlation matrix (excluding diagonal)
     upper_triangle = corr_matrix.where(np.triu(np.ones(corr_matrix.shape), k=1).astype(bool))
     avg_corr = upper_triangle.stack().mean()
     print(f"\nAverage correlation across datasets: {avg_corr:.3f}")
