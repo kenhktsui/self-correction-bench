@@ -62,6 +62,7 @@ def openai_client_process_item(client, item_tuple):
         response = client.completions.create(
             model=model,
             prompt=prompt,
+            max_tokens=1024,
             temperature=TEMPERATURE,
             stop=[eos_token]
         )
