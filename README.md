@@ -1,7 +1,7 @@
 # Official Repo for Self-Correction Bench: Revealing and Addressing the Self-Correction Blind Spot in LLMs
 
 
-[Dataset](https://huggingface.co/collections/kenhktsui/self-correction-bench-68623d6891eedae3ee7d5318)
+[Paper](https://arxiv.org/abs/2507.02778v1) | [Dataset](https://huggingface.co/collections/kenhktsui/self-correction-bench-68623d6891eedae3ee7d5318)
 
 In general, there are 3 steps to reproduce the result in the paper.
 1. llm_inference: prompt tested model for completions
