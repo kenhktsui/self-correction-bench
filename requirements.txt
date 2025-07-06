@@ -1,0 +1,10 @@
+transformers>=4.30.0
+pandas>=2.0.0
+pydantic
+matplotlib>=3.7.0
+seaborn>=0.12.0
+tqdm>=4.65.0
+numpy==1.26.4
+datasets>=2.12.0
+openai>=1.0.0
+google-genai>=1.19.0
