@@ -194,6 +194,3 @@ if __name__ == "__main__":
 
     for i in scli5_ds:
         print(i["messages_error_injection_in_model"], i["correct_answer"])
-
-    # ds = Dataset.from_list(scli5_ds)
-    # ds.push_to_hub("kenhktsui/scli5", split="test")
