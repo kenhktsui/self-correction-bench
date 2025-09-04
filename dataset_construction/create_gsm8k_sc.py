@@ -67,7 +67,7 @@ if question_set == set(ds["question"]):
             "messages_error_in_user_aca": [{"role": "user", "content": question + " " + reasoning + incorrect_answer}]
         }
     ds_sc = ds_sc.map(create_messages)
-    ds_sc.push_to_hub("kenhktsui/gsm8k_sc", split="test")
+    ds_sc.push_to_hub("super-brown/gsm8k_sc", split="test")
     exit()
 
 with open("gsm8k_sc.jsonl", "a") as f:
