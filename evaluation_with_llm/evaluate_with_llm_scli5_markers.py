@@ -25,7 +25,7 @@ else:
         pass
 
 
-dataset = load_dataset("kenhktsui/scli5", split="test")
+dataset = load_dataset("super-brown/scli5", split="test")
 correct_answer = {d['id']: d['correct_answer'] for d in dataset}
 
 
