@@ -22,7 +22,7 @@ else:
         pass
 
 
-dataset = load_dataset("kenhktsui/scli5", split="test")
+dataset = load_dataset("super-brown/scli5", split="test")
 
 
 # Create an OpenAI client with your deepinfra token and endpoint
