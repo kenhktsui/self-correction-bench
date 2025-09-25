@@ -1,4 +1,4 @@
-# Official Repo for Self-Correction Bench: Revealing and Addressing the Self-Correction Blind Spot in LLMs
+# Official Repo for Self-Correction Bench: Uncovering and Addressing the Self-Correction Blind Spot in Large Language Models
 
 In general, there are 3 steps to reproduce the result in the paper.
 1. llm_inference: prompt tested model for completions
