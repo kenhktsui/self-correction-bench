@@ -3,8 +3,10 @@ import pandas as pd
 from evaluation.evaluate_tool import get_is_correct_answer
 
 
+PROBLEM_ID_WITH_ERROR = [467, 361, 499, 857, 962, 1001]
+
+
 def load_gsm8k_sc_eval_data(temperature=0.0):
-    PROBLEM_ID_WITH_ERROR = [467, 361, 499, 857, 962, 1001]
 
     data_with_llm_eval = []
     record_hash = set()

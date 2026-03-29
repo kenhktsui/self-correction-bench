@@ -96,11 +96,11 @@ def calculate_blind_spot(dataset, question_types=None, field_mapping=None):
             if error_in_user_mean > 0 and n > 0:
                 error_in_model_sem = error_in_model_std / np.sqrt(n)
                 error_in_user_sem = error_in_user_std / np.sqrt(n)
-                
-                d_dx = error_in_model_mean / (error_in_user_mean ** 2)
-                d_dy = -1 / error_in_user_mean
-                
-                blind_spot_sem[model] = np.sqrt((d_dx ** 2) * (error_in_user_sem ** 2) + (d_dy ** 2) * (error_in_model_sem ** 2))
+
+                df_d_user  = error_in_model_mean / (error_in_user_mean ** 2)  # ∂blind_spot/∂error_in_user
+                df_d_model = -1 / error_in_user_mean                           # ∂blind_spot/∂error_in_model
+
+                blind_spot_sem[model] = np.sqrt((df_d_user ** 2) * (error_in_user_sem ** 2) + (df_d_model ** 2) * (error_in_model_sem ** 2))
             else:
                 blind_spot_sem[model] = 0
         
@@ -163,9 +163,9 @@ def calculate_blind_spot(dataset, question_types=None, field_mapping=None):
                 error_in_model_bca_sem = error_in_model_bca_std / np.sqrt(n)
                 error_in_user_bca_sem = error_in_user_bca_std / np.sqrt(n)
                 
-                d_dx_bca = error_in_model_bca_mean / (error_in_user_bca_mean ** 2)
-                d_dy_bca = -1 / error_in_user_bca_mean
-                blind_spot_sem_bca[model] = np.sqrt((d_dx_bca ** 2) * (error_in_user_bca_sem ** 2) + (d_dy_bca ** 2) * (error_in_model_bca_sem ** 2))
+                df_d_user_bca  = error_in_model_bca_mean / (error_in_user_bca_mean ** 2)  # ∂blind_spot/∂error_in_user
+                df_d_model_bca = -1 / error_in_user_bca_mean                               # ∂blind_spot/∂error_in_model
+                blind_spot_sem_bca[model] = np.sqrt((df_d_user_bca ** 2) * (error_in_user_bca_sem ** 2) + (df_d_model_bca ** 2) * (error_in_model_bca_sem ** 2))
             else:
                 blind_spot_sem_bca[model] = 0
             
@@ -173,9 +173,9 @@ def calculate_blind_spot(dataset, question_types=None, field_mapping=None):
                 error_in_model_aca_sem = error_in_model_aca_std / np.sqrt(n)
                 error_in_user_aca_sem = error_in_user_aca_std / np.sqrt(n)
                 
-                d_dx_aca = error_in_model_aca_mean / (error_in_user_aca_mean ** 2)
-                d_dy_aca = -1 / error_in_user_aca_mean
-                blind_spot_sem_aca[model] = np.sqrt((d_dx_aca ** 2) * (error_in_user_aca_sem ** 2) + (d_dy_aca ** 2) * (error_in_model_aca_sem ** 2))
+                df_d_user_aca  = error_in_model_aca_mean / (error_in_user_aca_mean ** 2)  # ∂blind_spot/∂error_in_user
+                df_d_model_aca = -1 / error_in_user_aca_mean                               # ∂blind_spot/∂error_in_model
+                blind_spot_sem_aca[model] = np.sqrt((df_d_user_aca ** 2) * (error_in_user_aca_sem ** 2) + (df_d_model_aca ** 2) * (error_in_model_aca_sem ** 2))
             else:
                 blind_spot_sem_aca[model] = 0
         
@@ -362,6 +362,8 @@ def plot_blind_spot_summary_generic(model_list, filename_suffix, setting='defaul
         data_matrix_mean.append(row_mean)
         data_matrix_sem.append(row_sem)
     
+    print(pd.DataFrame(data_matrix_mean, index=all_models, columns=datasets))
+
     data_matrix_mean = np.array(data_matrix_mean)
     data_matrix_sem = np.array(data_matrix_sem)
     
