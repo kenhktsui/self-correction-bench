@@ -3,13 +3,15 @@
 
 [Paper](https://arxiv.org/abs/2507.02778v1) | [Dataset](https://huggingface.co/collections/kenhktsui/self-correction-bench-68623d6891eedae3ee7d5318)
 
-In general, there are 3 steps to reproduce the result in the paper.
-1. llm_inference: prompt tested model for completions
-2. evaluation_with_llm: evaluate model completion against the ground truth
-3. plot/ analysis: produce various graph and analysis in the paper.
- 
-Due to time constraint (a month), and a lot of ad-hoc analysis, the codes is not beautifully structured. It needs some refactoring.
-
-Additional tests:
-- Test different correction markers: run llm_inference and evaluation_with_llm scripts with suffix *_markers.py
-- Extending to 4,096 tokens: run llm_inference and evaluation_with_llm scripts with suffix *complete_truncated.py
+Below are the steps to reproduce the result in the paper.
+| Result| Module|
+|---|---|
+| Main empirical result | llm_inference: 1. prompt tested model for completions |
+|  | evaluation_with_llm: 2. evaluate model completion against the ground truth |
+|  | plot/ analysis: 3. produce various graph and analysis in the paper |
+| Other domains, close-source model, on-policy error | extended_validation |
+| Finetuning with LoRA on self-correction data | finetune (see README in submodule) |
+| Mechanistical Analysis | mechinterpret (see README in submodule) |
+| **Sensitivity Analysis** | |
+| Test different correction markers | run llm_inference and evaluation_with_llm scripts with suffix \*\_markers.py |
+| Extending to 4,096 tokens | run llm_inference and evaluation_with_llm scripts with suffix \*complete\_truncated.py |
