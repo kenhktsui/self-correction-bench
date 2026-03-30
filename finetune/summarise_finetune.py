@@ -8,6 +8,7 @@ import pandas as pd
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from evaluation.evaluate_tool import get_is_correct_answer
+from evaluation.evaluate_gsm8k_sc import PROBLEM_ID_WITH_ERROR
 
 
 DATASET_KEYS = {
@@ -68,19 +69,21 @@ def main() -> None:
                 if not line:
                     continue
                 d = json.loads(line)
+                if dataset == "gsm8k" and d['id'] in PROBLEM_ID_WITH_ERROR:
+                    continue
+
                 model = d.get("model", "unknown")
                 counts[model]["total"] += 1
-                counts[model]["internal"] += get_is_correct_answer(d, internal_key)
                 counts[model]["external"] += get_is_correct_answer(d, external_key)
+                counts[model]["internal"] += get_is_correct_answer(d, internal_key)
 
         for model, c in sorted(counts.items()):
             n = c["total"]
             all_rows.append({
                 "dataset": dataset,
                 "model": model,
-                "n": n,
-                "internal (correction rate)": c["internal"] / n if n else 0.0,
-                "external (correction rate)": c["external"] / n if n else 0.0,
+                "external": c["external"] / n if n else 0.0,
+                "internal": c["internal"] / n if n else 0.0,
             })
 
     if not all_rows:
@@ -88,6 +91,12 @@ def main() -> None:
         return
 
     df = pd.DataFrame(all_rows).set_index(["dataset", "model"])
+
+    df['Blind Spot'] = (df['external'] - df['internal'])/df['external']
+    df['Blind Spot (Base Model)'] = [0.828947,  0.970794,  0.888889]
+    print(df['Blind Spot'].mean()/df['Blind Spot (Base Model)'].mean()-1)
+
+    print()
     print(df.to_string(float_format="{:.3f}".format))
     print()
     print(df.to_latex(float_format="{:.3f}".format))
@@ -95,4 +104,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
