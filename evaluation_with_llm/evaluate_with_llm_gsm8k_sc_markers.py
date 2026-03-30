@@ -26,7 +26,7 @@ else:
         pass
 
 
-dataset = load_dataset("kenhktsui/gsm8k_sc", split="test")
+dataset = load_dataset("super-brown/gsm8k_sc", split="test")
 correct_answer = {}
 for d in dataset:
     a = d["answer"].split("\n")

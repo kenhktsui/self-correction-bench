@@ -1,8 +1,6 @@
 # Official Repo for Self-Correction Bench: Revealing and Addressing the Self-Correction Blind Spot in LLMs
 
 
-[Paper](https://arxiv.org/abs/2507.02778v1) | [Dataset](https://huggingface.co/collections/kenhktsui/self-correction-bench-68623d6891eedae3ee7d5318)
-
 Below are the steps to reproduce the result in the paper.
 | Result| Module|
 |---|---|

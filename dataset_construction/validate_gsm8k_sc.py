@@ -15,7 +15,7 @@ class Calculation(BaseModel):
     incorrect_answer: float
 
 
-dataset = load_dataset("kenhktsui/gsm8k_sc", split="test")
+dataset = load_dataset("super-brown/gsm8k_sc", split="test")
 
 client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"),
                       http_options=types.HttpOptions(api_version='v1alpha', timeout=60 * 3 * 1000)

@@ -28,7 +28,7 @@ else:
         pass
 
 
-dataset = load_dataset("kenhktsui/prm800k_sc", split="test")
+dataset = load_dataset("super-brown/prm800k_sc", split="test")
 correct_answer = {d['question']: d['ground_truth_answer'] for d in dataset}
 
 

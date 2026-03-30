@@ -9,9 +9,9 @@ BASE_MODELS = {
 ALL_MODELS = BASE_MODELS
 
 HF_DATASETS = {
-    "scli5": "kenhktsui/scli5",
-    "gsm8k_sc": "kenhktsui/gsm8k_sc",
-    "prm800k_sc": "kenhktsui/prm800k_sc",
+    "scli5": "super-brown/scli5",
+    "gsm8k_sc": "super-brown/gsm8k_sc",
+    "prm800k_sc": "super-brown/prm800k_sc",
 }
 
 # Existing completion result files (relative to project root), keyed by (model_name, dataset)

@@ -39,12 +39,12 @@ def get_question_error_and_correct_answer_all():
     messages_error_injection_in_model_all = {}
     correct_answer_all = {}
 
-    dataset = load_dataset("kenhktsui/scli5", split="test")
+    dataset = load_dataset("super-brown/scli5", split="test")
     messages_error_injection_in_model_all['scli5'] = {d['id']: d['messages_error_injection_in_model'] for d in dataset}
     correct_answer_all['scli5'] = {d['id']: d['correct_answer'] for d in dataset}
     del dataset
 
-    dataset = load_dataset("kenhktsui/gsm8k_sc", split="test")
+    dataset = load_dataset("super-brown/gsm8k_sc", split="test")
     messages_error_injection_in_model_all['gsm8k_sc'] = {d['id']: d['messages_error_injection_in_model_bca'] for d in dataset}
     correct_answer = {}
     for d in dataset:
@@ -55,7 +55,7 @@ def get_question_error_and_correct_answer_all():
     correct_answer_all['gsm8k_sc'] = correct_answer
     del dataset
 
-    dataset = load_dataset("kenhktsui/prm800k_sc", split="test")
+    dataset = load_dataset("super-brown/prm800k_sc", split="test")
     messages_error_injection_in_model_all['prm800k_sc'] = {i: d['messages_error_injection_in_model_bca'] for i, d in enumerate(dataset)}
     correct_answer_all['prm800k_sc'] = {i: d['ground_truth_answer'] for i, d in enumerate(dataset)}
     return messages_error_injection_in_model_all, correct_answer_all

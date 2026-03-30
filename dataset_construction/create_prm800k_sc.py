@@ -15,7 +15,7 @@ random.seed(42)
 
 
 data = []
-with open("/Users/kenhktsui/Downloads/phase2_test.jsonl", "r") as f:
+with open("/Users/superbrown/Downloads/phase2_test.jsonl", "r") as f:
     for line in f:
         data.append(json.loads(line))
 
@@ -110,4 +110,4 @@ ds_sc = Dataset.from_list(prm800k_sc_data)
 assert len(set(ds_sc["question"])) == len(ds_sc)
 print("n_reasoning_step distribution", np.bincount(ds_sc["n_reasoning_step"]))
 print(ds_sc)
-ds_sc.push_to_hub("kenhktsui/prm800k_sc", split="test")
+ds_sc.push_to_hub("super-brown/prm800k_sc", split="test")

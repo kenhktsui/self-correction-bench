@@ -33,7 +33,7 @@ else:
         pass
 
 raw_dataset = []
-with open("/Users/kenhktsui/Downloads/logical_deduction.jsonl", "r") as f:
+with open("/Users/superbrown/Downloads/logical_deduction.jsonl", "r") as f:
     for line in f:
         d = json.loads(line)
         raw_dataset.append(d)

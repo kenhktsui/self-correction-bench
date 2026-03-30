@@ -103,17 +103,17 @@ def process_prm800k_sc(d, model, tokenizer, model_name, max_tokens, temp):
 
 DATASET_CONFIG = {
     "scli5": {
-        "hf_name": "kenhktsui/scli5",
+        "hf_name": "super-brown/scli5",
         "id_key": "id",
         "processor": process_scli5,
     },
     "gsm8k_sc": {
-        "hf_name": "kenhktsui/gsm8k_sc",
+        "hf_name": "super-brown/gsm8k_sc",
         "id_key": "id",
         "processor": process_gsm8k_sc,
     },
     "prm800k_sc": {
-        "hf_name": "kenhktsui/prm800k_sc",
+        "hf_name": "super-brown/prm800k_sc",
         "id_key": "question",
         "processor": process_prm800k_sc,
     },
