@@ -24,7 +24,7 @@ MODEL_LIST = {
 
 
 TEMPERATURE = 0.0
-FILE_NAME = "rebuttal/domain/logic_deduction_completion_results_api.jsonl" if TEMPERATURE == 0.0 else f"rebuttal/domain/logic_deduction_completion_results_api_{str(TEMPERATURE).replace('.', '_')}.jsonl"
+FILE_NAME = "extended_validation/domain/logic_deduction_completion_results_api.jsonl" if TEMPERATURE == 0.0 else f"extended_validation/domain/logic_deduction_completion_results_api_{str(TEMPERATURE).replace('.', '_')}.jsonl"
 
 if os.path.exists(FILE_NAME):
     print(f"File {FILE_NAME} already exists.")

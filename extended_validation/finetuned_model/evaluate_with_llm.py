@@ -144,7 +144,7 @@ def process_data_bca(d, correct_answer=None, correct_answer_key=None):
 
 
 # finetuned model
-with open("rebuttal/finetuned_model/finetuned_model_deepinfra.jsonl") as f:
+with open("extended_validation/finetuned_model/finetuned_model_deepinfra.jsonl") as f:
     data = [json.loads(line) for line in f]
     for d in tqdm(data):
         if d['dataset'] == "scli5":
@@ -163,11 +163,11 @@ with open("rebuttal/finetuned_model/finetuned_model_deepinfra.jsonl") as f:
             d["messages_error_in_user_bca"] = prm800k_sc_hashmap[d['question']]["messages_error_in_user_bca"]
             d = process_data_bca(d, prm800k_sc_correct_answer, 'question')
         if d:
-            with open("rebuttal/finetuned_model/finetuned_model_deepinfra_llm_eval.jsonl", "a") as f:
+            with open("extended_validation/finetuned_model/finetuned_model_deepinfra_llm_eval.jsonl", "a") as f:
                 f.write(json.dumps(d) + "\n")
 
 
-# with open("rebuttal/finetuned_model/finetuned_model_featherless.jsonl") as f:
+# with open("extended_validation/finetuned_model/finetuned_model_featherless.jsonl") as f:
 #     data = [json.loads(line) for line in f]
 #     for d in tqdm(data):
 #         if d['dataset'] == "scli5":
@@ -183,5 +183,5 @@ with open("rebuttal/finetuned_model/finetuned_model_deepinfra.jsonl") as f:
 #             d["messages_error_in_user_bca"] = prm800k_sc_hashmap[d['question']]["messages_error_in_user_bca"]
 #             d = process_data_bca(d, prm800k_sc_correct_answer, 'question')
 #         if d:
-#             with open("rebuttal/finetuned_model/finetuned_model_featherless_llm_eval.jsonl", "a") as f:
+#             with open("extended_validation/finetuned_model/finetuned_model_featherless_llm_eval.jsonl", "a") as f:
 #                 f.write(json.dumps(d) + "\n")

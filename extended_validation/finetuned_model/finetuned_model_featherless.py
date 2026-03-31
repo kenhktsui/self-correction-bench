@@ -106,5 +106,5 @@ if __name__ == "__main__":
                 "checked_error_injection_in_model": checked_error_injection_in_model,
                 "checked_error_in_user": checked_error_in_user
             }
-            with open(f"rebuttal/finetuned_model/finetuned_model_featherless.jsonl", "a") as f:
+            with open(f"extended_validation/finetuned_model/finetuned_model_featherless.jsonl", "a") as f:
                 f.write(json.dumps(d) + "\n")

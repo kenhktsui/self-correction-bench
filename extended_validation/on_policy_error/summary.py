@@ -40,13 +40,13 @@ def summary_v2(path_list):
 # olympiadbench_df = olympiadbench_df[olympiadbench_df["checked"].isin([0, 1])]
 # omnimath_df = omnimath_df[omnimath_df["checked"].isin([0, 1])]
 
-gsm8k_summary = summary("rebuttal/on_policy_error/on_policy_error_gsm8k_v2_llm_eval.jsonl")
+gsm8k_summary = summary("extended_validation/on_policy_error/on_policy_error_gsm8k_v2_llm_eval.jsonl")
 gsm8k_summary['dataset'] = 'GSM8K'
-math_summary = summary("rebuttal/on_policy_error/on_policy_error_math_v2_llm_eval.jsonl")
+math_summary = summary("extended_validation/on_policy_error/on_policy_error_math_v2_llm_eval.jsonl")
 math_summary['dataset'] = 'MATH'
-olympiadbench_summary = summary("rebuttal/on_policy_error/on_policy_error_olympiadbench_v2_llm_eval.jsonl")
+olympiadbench_summary = summary("extended_validation/on_policy_error/on_policy_error_olympiadbench_v2_llm_eval.jsonl")
 olympiadbench_summary['dataset'] = 'OlympiadBench'
-omnimath_summary = summary("rebuttal/on_policy_error/on_policy_error_omnimath_v2_llm_eval.jsonl")
+omnimath_summary = summary("extended_validation/on_policy_error/on_policy_error_omnimath_v2_llm_eval.jsonl")
 omnimath_summary['dataset'] = 'Omni-Math'
 
 all_summary = pd.concat([
@@ -80,10 +80,10 @@ print(all_summary.round(3).astype(str).to_latex(index=False))
 
 
 all_summary = summary_v2([
-    "rebuttal/on_policy_error/on_policy_error_gsm8k_v2_llm_eval.jsonl",
-    "rebuttal/on_policy_error/on_policy_error_math_v2_llm_eval.jsonl",
-    "rebuttal/on_policy_error/on_policy_error_olympiadbench_v2_llm_eval.jsonl",
-    "rebuttal/on_policy_error/on_policy_error_omnimath_v2_llm_eval.jsonl"
+    "extended_validation/on_policy_error/on_policy_error_gsm8k_v2_llm_eval.jsonl",
+    "extended_validation/on_policy_error/on_policy_error_math_v2_llm_eval.jsonl",
+    "extended_validation/on_policy_error/on_policy_error_olympiadbench_v2_llm_eval.jsonl",
+    "extended_validation/on_policy_error/on_policy_error_omnimath_v2_llm_eval.jsonl"
 ])
 all_summary['Accuracy (95% CI)'] = all_summary.apply(lambda r: format_standard_error(r['accuracy'], r['standard_error'], m=1.96), axis=1)
 del all_summary['accuracy']
@@ -93,8 +93,8 @@ all_summary = all_summary[['model', 'Accuracy (95% CI)', 'size']]
 
 
 all_summary_subset = summary_v2([
-    "rebuttal/on_policy_error/on_policy_error_gsm8k_v2_llm_eval.jsonl",
-    "rebuttal/on_policy_error/on_policy_error_math_v2_llm_eval.jsonl",
+    "extended_validation/on_policy_error/on_policy_error_gsm8k_v2_llm_eval.jsonl",
+    "extended_validation/on_policy_error/on_policy_error_math_v2_llm_eval.jsonl",
 ])
 all_summary_subset['Accuracy (95% CI) subset'] = all_summary_subset.apply(lambda r: format_standard_error(r['accuracy'], r['standard_error'], m=1.96), axis=1)
 del all_summary_subset['accuracy']

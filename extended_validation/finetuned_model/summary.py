@@ -21,7 +21,7 @@ def load_eval_data(path):
 
 
 if __name__ == "__main__":
-    data_with_llm_eval = load_eval_data("rebuttal/finetuned_model/finetuned_model_deepinfra_llm_eval.jsonl") + load_eval_data("rebuttal/finetuned_model/finetuned_model_featherless_llm_eval.jsonl")
+    data_with_llm_eval = load_eval_data("extended_validation/finetuned_model/finetuned_model_deepinfra_llm_eval.jsonl") + load_eval_data("extended_validation/finetuned_model/finetuned_model_featherless_llm_eval.jsonl")
     df_with_llm_eval_summary = pd.DataFrame([[d["dataset"], d["model"], 
                                     get_is_correct_answer(d, "llm_evaluation") or get_is_correct_answer(d, "llm_evaluation_bca"), 
                                     get_is_correct_answer(d, "llm_evaluation_error_in_user") or get_is_correct_answer(d, "llm_evaluation_error_in_user_bca"), 

@@ -78,35 +78,35 @@ def process_data(d, correct_answer=None, correct_answer_key=None):
     return d
 
 
-# with open("rebuttal/on_policy_error/on_policy_error_gsm8k_v2.jsonl") as f:
+# with open("extended_validation/on_policy_error/on_policy_error_gsm8k_v2.jsonl") as f:
 #     data = [json.loads(line) for line in f]
 #     for d in tqdm(data, desc="Processing on policy error gsm8k data"):
 #         d = process_data(d)
 #         if d:
-#             with open("rebuttal/on_policy_error/on_policy_error_gsm8k_v2_llm_eval.jsonl", "a") as f:
+#             with open("extended_validation/on_policy_error/on_policy_error_gsm8k_v2_llm_eval.jsonl", "a") as f:
 #                 f.write(json.dumps(d) + "\n")
 
-# with open("rebuttal/on_policy_error/on_policy_error_math_v2.jsonl") as f:
+# with open("extended_validation/on_policy_error/on_policy_error_math_v2.jsonl") as f:
 #     data = [json.loads(line) for line in f]
 #     for d in tqdm(data, desc="Processing on policy error math data"):
 #         d = process_data(d)
 #         if d:
-#             with open("rebuttal/on_policy_error/on_policy_error_math_v2_llm_eval.jsonl", "a") as f:
+#             with open("extended_validation/on_policy_error/on_policy_error_math_v2_llm_eval.jsonl", "a") as f:
 #                 f.write(json.dumps(d) + "\n")
 
-# with open("rebuttal/on_policy_error/on_policy_error_olympiadbench_v2.jsonl") as f:
+# with open("extended_validation/on_policy_error/on_policy_error_olympiadbench_v2.jsonl") as f:
 #     data = [json.loads(line) for line in f]
 #     for d in tqdm(data, desc="Processing on policy error olympiadbench data"):
 #         d = process_data(d)
 #         if d:
-#             with open("rebuttal/on_policy_error/on_policy_error_olympiadbench_v2_llm_eval.jsonl", "a") as f:
+#             with open("extended_validation/on_policy_error/on_policy_error_olympiadbench_v2_llm_eval.jsonl", "a") as f:
 #                 f.write(json.dumps(d) + "\n")
 
 
-with open("rebuttal/on_policy_error/on_policy_error_omnimath_v2.jsonl") as f:    
+with open("extended_validation/on_policy_error/on_policy_error_omnimath_v2.jsonl") as f:    
     data = [json.loads(line) for line in f][:21]
     for d in tqdm(data, desc="Processing on policy error omnimath data"):
         d = process_data(d)
         if d:
-            with open("rebuttal/on_policy_error/on_policy_error_omnimath_v2_llm_eval.jsonl", "a") as f:
+            with open("extended_validation/on_policy_error/on_policy_error_omnimath_v2_llm_eval.jsonl", "a") as f:
                 f.write(json.dumps(d) + "\n")

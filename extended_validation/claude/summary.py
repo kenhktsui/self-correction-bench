@@ -6,7 +6,7 @@ from evaluation.evaluate_tool import get_is_correct_answer
 def load_scli5_eval_data(temperature=0.0):
     data_with_llm_eval = []
     record_hash = set()
-    with open(f"rebuttal/claude/scli5_completion_results_claude_llm_eval.jsonl", "r") as f:
+    with open(f"extended_validation/claude/scli5_completion_results_claude_llm_eval.jsonl", "r") as f:
         for line in f:
             d = json.loads(line)
 
@@ -23,7 +23,7 @@ def load_gsm8k_sc_eval_data(temperature=0.0):
 
     data_with_llm_eval = []
     record_hash = set()
-    with open(f"rebuttal/claude/gsm8k_sc_completion_results_claude_llm_eval.jsonl", "r") as f:
+    with open(f"extended_validation/claude/gsm8k_sc_completion_results_claude_llm_eval.jsonl", "r") as f:
         for line in f:
             d = json.loads(line)
             d['model'] = d['model'] + '_thinking' if d.get('enable_thinking') else d['model']
@@ -41,7 +41,7 @@ def load_gsm8k_sc_eval_data(temperature=0.0):
 def load_prm800k_sc_eval_data(temperature=0.0, supplement=False):
     data_with_llm_eval = []
     record_hash = {}
-    with open("rebuttal/claude/prm800k_sc_completion_results_claude_llm_eval.jsonl", "r") as f:
+    with open("extended_validation/claude/prm800k_sc_completion_results_claude_llm_eval.jsonl", "r") as f:
         for line in f:
             d = json.loads(line)
             d['model'] = d['model'] + '_thinking' if d.get('enable_thinking') else d['model']

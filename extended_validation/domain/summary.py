@@ -6,7 +6,7 @@ from evaluation.evaluate_tool import get_is_correct_answer
 
 if __name__ == "__main__":
     data_with_llm_eval = []
-    with open(f"rebuttal/domain/tracking_shuffled_objects_completion_results_api_llm_eval.jsonl", "r") as f:
+    with open(f"extended_validation/domain/tracking_shuffled_objects_completion_results_api_llm_eval.jsonl", "r") as f:
         for line in f:
             d = json.loads(line)
 
@@ -63,8 +63,8 @@ if __name__ == "__main__":
         return df_with_llm_eval_domain
 
     
-tracking_shuffled_objects_summary = summary("rebuttal/domain/tracking_shuffled_objects_completion_results_api_llm_eval.jsonl")
-logic_deduction_summary = summary("rebuttal/domain/logic_deduction_completion_results_api_llm_eval.jsonl")
+tracking_shuffled_objects_summary = summary("extended_validation/domain/tracking_shuffled_objects_completion_results_api_llm_eval.jsonl")
+logic_deduction_summary = summary("extended_validation/domain/logic_deduction_completion_results_api_llm_eval.jsonl")
 
 tracking_shuffled_objects_summary['dataset'] = 'Tracking shuffled objects'
 logic_deduction_summary['dataset'] = 'Logical deduction'

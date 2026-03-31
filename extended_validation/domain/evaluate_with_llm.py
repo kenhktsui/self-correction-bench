@@ -93,8 +93,8 @@ def process_data(d):
 
 
 processed_id_set = set()
-if os.path.exists("rebuttal/domain/tracking_shuffled_objects_completion_results_api_llm_eval.jsonl"):
-    with open("rebuttal/domain/tracking_shuffled_objects_completion_results_api_llm_eval.jsonl", "r") as f:
+if os.path.exists("extended_validation/domain/tracking_shuffled_objects_completion_results_api_llm_eval.jsonl"):
+    with open("extended_validation/domain/tracking_shuffled_objects_completion_results_api_llm_eval.jsonl", "r") as f:
         for line in f:
             d = json.loads(line)
             processed_id_set.add(str(d['id']) + "_" + d['model'] + "_" + str(d.get('enable_thinking', False)))
@@ -102,21 +102,21 @@ if os.path.exists("rebuttal/domain/tracking_shuffled_objects_completion_results_
 print(f"Number of results that have been processed: {len(processed_id_set)}")
 
 # domain
-with open("rebuttal/domain/tracking_shuffled_objects_completion_results_api.jsonl") as f:
+with open("extended_validation/domain/tracking_shuffled_objects_completion_results_api.jsonl") as f:
     data = [json.loads(line) for line in f]
     for d in tqdm(data, desc="Processing domain data"):
         if str(d['id']) + "_" + d['model'] + "_" + str(d.get('enable_thinking', False)) in processed_id_set:
             continue
         d = process_data(d)
         if d:
-            with open("rebuttal/domain/tracking_shuffled_objects_completion_results_api_llm_eval.jsonl", "a") as f:
+            with open("extended_validation/domain/tracking_shuffled_objects_completion_results_api_llm_eval.jsonl", "a") as f:
                 f.write(json.dumps(d) + "\n")
 
 
 
 processed_id_set = set()
-if os.path.exists("rebuttal/domain/logic_deduction_completion_results_api_llm_eval.jsonl"):
-    with open("rebuttal/domain/logic_deduction_completion_results_api_llm_eval.jsonl", "r") as f:
+if os.path.exists("extended_validation/domain/logic_deduction_completion_results_api_llm_eval.jsonl"):
+    with open("extended_validation/domain/logic_deduction_completion_results_api_llm_eval.jsonl", "r") as f:
         for line in f:
             d = json.loads(line)
             processed_id_set.add(str(d['id']) + "_" + d['model'] + "_" + str(d.get('enable_thinking', False)))
@@ -124,12 +124,12 @@ if os.path.exists("rebuttal/domain/logic_deduction_completion_results_api_llm_ev
 print(f"Number of results that have been processed: {len(processed_id_set)}")
 
 # domain
-with open("rebuttal/domain/logic_deduction_completion_results_api.jsonl") as f:
+with open("extended_validation/domain/logic_deduction_completion_results_api.jsonl") as f:
     data = [json.loads(line) for line in f]
     for d in tqdm(data, desc="Processing domain data"):
         if str(d['id']) + "_" + d['model'] + "_" + str(d.get('enable_thinking', False)) in processed_id_set:
             continue
         d = process_data(d)
         if d:
-            with open("rebuttal/domain/logic_deduction_completion_results_api_llm_eval.jsonl", "a") as f:
+            with open("extended_validation/domain/logic_deduction_completion_results_api_llm_eval.jsonl", "a") as f:
                 f.write(json.dumps(d) + "\n")

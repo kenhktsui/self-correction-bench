@@ -138,26 +138,26 @@ def process_data_bca(d, correct_answer=None, correct_answer_key=None):
 
 
 # claude
-with open("rebuttal/claude/scli5_completion_results_claude.jsonl") as f:
+with open("extended_validation/claude/scli5_completion_results_claude.jsonl") as f:
     data = [json.loads(line) for line in f]
     for d in tqdm(data, desc="Processing scli5 data"):
         d = process_data(d, scli5_correct_answer, 'id')
         if d:
-            with open("rebuttal/claude/scli5_completion_results_claude_llm_eval.jsonl", "a") as f:
+            with open("extended_validation/claude/scli5_completion_results_claude_llm_eval.jsonl", "a") as f:
                 f.write(json.dumps(d) + "\n")
 
-with open("rebuttal/claude/gsm8k_sc_completion_results_claude.jsonl") as f:
+with open("extended_validation/claude/gsm8k_sc_completion_results_claude.jsonl") as f:
     data = [json.loads(line) for line in f]
     for d in tqdm(data, desc="Processing gsm8k data"):
         d = process_data_bca(d, gsm8k_sc_correct_answer, 'id')
         if d:
-            with open("rebuttal/claude/gsm8k_sc_completion_results_claude_llm_eval.jsonl", "a") as f:
+            with open("extended_validation/claude/gsm8k_sc_completion_results_claude_llm_eval.jsonl", "a") as f:
                 f.write(json.dumps(d) + "\n")
 
-with open("rebuttal/claude/prm800k_sc_completion_results_claude.jsonl") as f:
+with open("extended_validation/claude/prm800k_sc_completion_results_claude.jsonl") as f:
     data = [json.loads(line) for line in f]
     for d in tqdm(data, desc="Processing prm800k data"):
         d = process_data_bca(d, prm800k_sc_correct_answer, 'question')
         if d:
-            with open("rebuttal/claude/prm800k_sc_completion_results_claude_llm_eval.jsonl", "a") as f:
+            with open("extended_validation/claude/prm800k_sc_completion_results_claude_llm_eval.jsonl", "a") as f:
                 f.write(json.dumps(d) + "\n")

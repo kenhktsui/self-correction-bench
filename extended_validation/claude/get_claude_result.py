@@ -46,22 +46,22 @@ print(f"Number of results that have been processed: {len(prm800k_id_hashmap)}")
 
 
 scli5_id_processed = set()
-if os.path.exists("rebuttal/claude/scli5_completion_results_claude.jsonl"):
-    with open("rebuttal/claude/scli5_completion_results_claude.jsonl", "r") as f:
+if os.path.exists("extended_validation/claude/scli5_completion_results_claude.jsonl"):
+    with open("extended_validation/claude/scli5_completion_results_claude.jsonl", "r") as f:
         for line in f:
             d = json.loads(line)
             scli5_id_processed.add((d['id'], d['model']))
 
 gsm8k_id_processed = set()
-if os.path.exists("rebuttal/claude/gsm8k_sc_completion_results_claude.jsonl"):
-    with open("rebuttal/claude/gsm8k_sc_completion_results_claude.jsonl", "r") as f:
+if os.path.exists("extended_validation/claude/gsm8k_sc_completion_results_claude.jsonl"):
+    with open("extended_validation/claude/gsm8k_sc_completion_results_claude.jsonl", "r") as f:
         for line in f:
             d = json.loads(line)
             gsm8k_id_processed.add((d['id'], d['model']))
 
 prm800k_id_processed = set()
-if os.path.exists("rebuttal/claude/prm800k_sc_completion_results_claude.jsonl"):
-    with open("rebuttal/claude/prm800k_sc_completion_results_claude.jsonl", "r") as f:
+if os.path.exists("extended_validation/claude/prm800k_sc_completion_results_claude.jsonl"):
+    with open("extended_validation/claude/prm800k_sc_completion_results_claude.jsonl", "r") as f:
         for line in f:
             d = json.loads(line)
             prm800k_id_processed.add((d['question'], d['model']))
@@ -126,7 +126,7 @@ prm800k_data = load_dataset("super-brown/prm800k_sc", split="test")
 
 
 # https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering/prefill-claudes-response
-with open("rebuttal/claude/scli5_completion_results_claude.jsonl", "a") as f:
+with open("extended_validation/claude/scli5_completion_results_claude.jsonl", "a") as f:
     for model in MODEL_ANTHROPIC:
         for d in tqdm(scli5_data, desc="Processing scli5 data"):
             if (d['id'], model) in scli5_id_processed:
@@ -148,7 +148,7 @@ with open("rebuttal/claude/scli5_completion_results_claude.jsonl", "a") as f:
                 f.write(json.dumps(result) + "\n")
 
 
-with open("rebuttal/claude/gsm8k_sc_completion_results_claude.jsonl", "a") as f:
+with open("extended_validation/claude/gsm8k_sc_completion_results_claude.jsonl", "a") as f:
     for model in MODEL_ANTHROPIC:
         for d in tqdm(gsm8k_data, desc="Processing gsm8k data"):
             if (d['id'], model) in gsm8k_id_processed:
@@ -170,7 +170,7 @@ with open("rebuttal/claude/gsm8k_sc_completion_results_claude.jsonl", "a") as f:
                 f.write(json.dumps(result) + "\n")
 
 
-with open("rebuttal/claude/prm800k_sc_completion_results_claude.jsonl", "a") as f:
+with open("extended_validation/claude/prm800k_sc_completion_results_claude.jsonl", "a") as f:
     for model in MODEL_ANTHROPIC:
         for d in tqdm(prm800k_data, desc="Processing prm800k data"):
             if (d['question'], model) in prm800k_id_processed:

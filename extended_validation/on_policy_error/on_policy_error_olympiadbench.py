@@ -105,5 +105,5 @@ if __name__ == "__main__":
                 "response": response,
                 "checked": checked,
             }
-            with open(f"rebuttal/on_policy_error/on_policy_error_olympiadbench_v3.jsonl", "a") as f:
+            with open(f"extended_validation/on_policy_error/on_policy_error_olympiadbench_v3.jsonl", "a") as f:
                 f.write(json.dumps(d) + "\n")
