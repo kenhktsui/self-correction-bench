@@ -15,6 +15,14 @@ for MODEL in llama-8b qwen2.5-7b; do
         --output_dir mechinterpret/results
   done
 done
+
+for MODEL in llama-8b qwen2.5-7b; do
+  for DS in scli5 gsm8k_sc prm800k_sc; do
+    python -m mechinterpret.experiment1_wait \
+        --model $MODEL --dataset $DS \
+        --output_dir mechinterpret/results
+  done
+done
 ```
 #### Step 2: Analyse
 ```bash
